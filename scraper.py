@@ -1,23 +1,30 @@
-from urllib.request import urlopen
+import requests
 import mysql.connector
+from db_config import db_config
 from bs4 import BeautifulSoup
 from datetime import datetime
 import json
 
 
 def web_scraper(query):
-    base_url = "https://news.google.com"
+    base_url = f"https://www.google.com/search?q={query}&tbm=nws"
 
-    page = urlopen(base_url + "/search?q=" + query)
+    # page = urlopen(base_url + "/search?q=" + query)
+    # html_bytes = page.read()
+    # html_content = html_bytes.decode("utf-8")
 
-    html_bytes = page.read()
-    html_content = html_bytes.decode("utf-8")
+    response = requests.get(base_url)
+    response.encoding = 'utf-8'
+    html_content = response.content
 
     # Parse the HTML content of the page
     soup = BeautifulSoup(html_content, 'html.parser')
 
+    text = soup.getText()
+    print(text)
+
     # Find all <article> tags
-    articles = soup.find_all('article')
+    articles = soup.find_all('div')
 
     list_of_articles = []
     # Process each article tag
@@ -25,27 +32,24 @@ def web_scraper(query):
         # Extract href value from the first <a> tag
         a_tag = article.find('a')
         link = a_tag['href'] if a_tag else None
+        link = str(link)
+        # clean string and append into the list
+        if link.startswith("/url"):
+            if 'google.com' in link:
+                break
+            else:
+                link = link.replace("/url?q=", '')
+                list_of_articles.append(link)
 
-        # Extract datetime value from the first <time> tag
-        time_tag = article.find('time')
-        raw_date = time_tag['datetime'] if time_tag else None
-        date = datetime.fromisoformat(raw_date[:-1]).strftime('%Y-%m-%d')
-
-        list_of_articles.append((date, base_url + link[1:]))
-
-    # Save the links and dates to the MySQL database
-    # save_to_database(query, list_of_articles)
+    # Save the links to the MySQL database
+    save_to_database(query, list_of_articles)
     print(f"{len(list_of_articles)} articles on '{query}' saved to the database.")
+    print(list_of_articles)
 
 
 def save_to_database(query, article_list):
     # Connect to MySQL database
-    conn = mysql.connector.connect(
-        host='127.0.0.1',
-        user='root',
-        password='Beta@22110266',
-        database='shares'
-    )
+    conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
 
     # Create a table if it doesn't exist
@@ -53,17 +57,16 @@ def save_to_database(query, article_list):
         CREATE TABLE IF NOT EXISTS articles (
             id INT AUTO_INCREMENT PRIMARY KEY,
             company_name VARCHAR(255),
-            published_date DATE,
             article_link TEXT
         )
     ''')
 
     # Insert data into the table
-    for date, link in article_list:
+    for link in article_list:
         cursor.execute('''
-            INSERT IGNORE INTO articles (company_name, published_date, article_link)
-            VALUES (%s, %s, %s)
-        ''', (query, date, link))
+            INSERT IGNORE INTO articles (company_name, article_link)
+            VALUES (%s, %s)
+        ''', (query, link))
 
     # Commit changes and close the connection
     conn.commit()
