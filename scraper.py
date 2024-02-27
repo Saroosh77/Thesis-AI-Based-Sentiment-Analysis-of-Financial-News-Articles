@@ -20,10 +20,7 @@ def web_scraper(query):
     # Parse the HTML content of the page
     soup = BeautifulSoup(html_content, 'html.parser')
 
-    text = soup.getText()
-    print(text)
-
-    # Find all <article> tags
+    # Find all <div> tags
     articles = soup.find_all('div')
 
     list_of_articles = []
@@ -34,11 +31,11 @@ def web_scraper(query):
         link = a_tag['href'] if a_tag else None
         link = str(link)
         # clean string and append into the list
-        if link.startswith("/url"):
-            if 'google.com' in link:
-                break
-            else:
-                link = link.replace("/url?q=", '')
+        if 'http' in link and '.google.com' not in link:
+            start_index = link.find('http')
+            end_index = link.find('&')
+            link = link[start_index:end_index]
+            if link not in list_of_articles:
                 list_of_articles.append(link)
 
     # Save the links to the MySQL database
