@@ -18,13 +18,13 @@ X_train, X_val, y_train, y_val = train_test_split(inputs["input_ids"], labels, t
 
 # Define training arguments
 training_args = TrainingArguments(
-    output_dir="./sentiment_distilbert_model",
+    output_dir="sentiment_distilbert_model",
     num_train_epochs=3,
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
     warmup_steps=500,
     weight_decay=0.01,
-    logging_dir="./logs",
+    logging_dir="../logs",
 )
 
 # Define Trainer
