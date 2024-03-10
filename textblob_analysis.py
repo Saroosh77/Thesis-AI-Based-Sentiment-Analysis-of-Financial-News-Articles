@@ -95,26 +95,26 @@ def semantic_analyzer(url):
         print(len(relevant_sentences))
         #
         # # Sentiment Analysis with TextBlob
-        # textblob_sentiment = []
-        # polarity_list = []
-        # subjectivity_list = []
-        # for s in relevant_sentences:
-        #     txt = TextBlob(s)
-        #     polarity = txt.polarity
-        #     subjectivity = txt.subjectivity
-        #     textblob_sentiment.append((s, polarity, subjectivity))
-        #     polarity_list.append(polarity)
-        #     subjectivity_list.append(subjectivity)
-        #
-        # # Dataframe for TextBlob
-        # # df_textBlob = pd.DataFrame(textblob_sentiment, columns=['Sentence', 'Polarity', 'Subjectivity',])
-        # # display(df_textBlob.to_string())
-        # # df_textBlob.info()
-        #
-        # # Calculate overall Polarity Score
-        # if polarity_list is not []:
-        #     polarity_score = np.nanmean(polarity_list)
-        #     return polarity_score
+        textblob_sentiment = []
+        polarity_list = []
+        subjectivity_list = []
+        for s in relevant_sentences:
+            txt = TextBlob(s)
+            polarity = txt.polarity
+            subjectivity = txt.subjectivity
+            textblob_sentiment.append((s, polarity, subjectivity))
+            polarity_list.append(polarity)
+            subjectivity_list.append(subjectivity)
+
+        # Dataframe for TextBlob
+        # df_textBlob = pd.DataFrame(textblob_sentiment, columns=['Sentence', 'Polarity', 'Subjectivity',])
+        # display(df_textBlob.to_string())
+        # df_textBlob.info()
+
+        # Calculate overall Polarity Score
+        if polarity_list is not []:
+            polarity_score = np.nanmean(polarity_list)
+            return polarity_score
 
     except requests.RequestException as e:
         print(f"Error fetching data from {url}: {e} ")
@@ -125,32 +125,32 @@ def semantic_analyzer(url):
 
 
 if __name__ == "__main__":
-    article_list = data_retriever()
-    for i in range(10):
-        semantic_analyzer(article_list[i][0])
-    # try:
-    #     article_list = data_retriever()
-    #     if not article_list:
-    #         print("No data received from the Database")
-    #     else:
-    #         rating_list = []
-    #         for article in article_list:
-    #             rating = semantic_analyzer(article[0])
-    #             if rating is not None:
-    #                 if rating >= 0.5:
-    #                     rating_list.append(('Very Positive', rating, article))
-    #                 elif 0 < rating < 0.5:
-    #                     rating_list.append(('Slightly Positive', rating, article))
-    #                 elif 0 < rating < -0.05:
-    #                     rating_list.append(('Slightly Negative', rating, article))
-    #                 elif rating <= -0.5:
-    #                     rating_list.append(('Very Negative', rating, article))
-    #                 elif rating == 0:
-    #                     rating_list.append(('Neutral', rating, article))
-    #             else:
-    #                 rating_list.append(('Error', rating, article))
-    #         for i in rating_list:
-    #             print(i)
-    #
-    # except Exception as e:
-    #     print(f"An unexpected error occurred: {e}")
+    # article_list = data_retriever()
+    # for i in range(10):
+    #     semantic_analyzer(article_list[i][0])
+    try:
+        article_list = data_retriever()
+        if not article_list:
+            print("No data received from the Database")
+        else:
+            rating_list = []
+            for article in article_list:
+                rating = semantic_analyzer(article[0])
+                if rating is not None:
+                    if rating >= 0.5:
+                        rating_list.append(('Very Positive', rating, article))
+                    elif 0 < rating < 0.5:
+                        rating_list.append(('Slightly Positive', rating, article))
+                    elif 0 < rating < -0.05:
+                        rating_list.append(('Slightly Negative', rating, article))
+                    elif rating <= -0.5:
+                        rating_list.append(('Very Negative', rating, article))
+                    elif rating == 0:
+                        rating_list.append(('Neutral', rating, article))
+                else:
+                    rating_list.append(('Error', rating, article))
+            for i in rating_list:
+                print(i)
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
