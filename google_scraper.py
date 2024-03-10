@@ -9,10 +9,6 @@ import json
 def web_scraper(query):
     base_url = f"https://www.google.com/search?q={query}&tbm=nws"
 
-    # page = urlopen(base_url + "/search?q=" + query)
-    # html_bytes = page.read()
-    # html_content = html_bytes.decode("utf-8")
-
     response = requests.get(base_url)
     response.encoding = 'utf-8'
     html_content = response.content
