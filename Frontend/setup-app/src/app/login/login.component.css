@@ -1,0 +1,10 @@
+.loginh1 {
+    text-align: center;
+}
+
+.logincard {
+    width: 40%;
+    margin: 0 auto;
+    padding: 5vh;
+    background-color: #F5F5FF;
+}

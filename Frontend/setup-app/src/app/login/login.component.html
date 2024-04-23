@@ -1,0 +1,30 @@
+<div class="loginh1">
+<h1>Login</h1>
+
+<br>
+
+<div>
+    <mat-card class="logincard">
+        <!-- <form [formGroup]="loginForm" (ngSubmit)="login()"> -->
+            <div>
+                <mat-label><b>E-Mail</b></mat-label><br><br>
+                <input type="email" id="email" name="email" placeholder="Email" required formControlName="email"  />
+                <!-- <div *ngIf="formControls['email'].errors">
+                    <mat-error *ngIf="formControls['email'].errors?.['required']">{{'EmailInput'}}</mat-error>
+                    <mat-error *ngIf="formControls['email'].errors?.['email']">{{'EmailValid'}}</mat-error>
+                </div> -->
+            </div>
+            <br>
+            <mat-label><b>{{'Password'}}</b></mat-label><br>
+            <div>
+                <input type="password" id="password" name="password" placeholder="Password" required formControlName="password"> <!--[ngClass]="{ 'has-error': formControls['password'].errors }"> -->
+                <!-- <div *ngIf="formControls['password'].errors">
+                    <mat-error *ngIf="formControls['password'].errors?.['required']">{{'PasswordInput'}}</mat-error>
+                    <mat-error *ngIf="formControls['password'].errors?.['password']">{{'PasswordValid'}}</mat-error>
+                </div> -->
+            </div>
+            <!-- <br> -->
+            <p><button mat-raised-button class="button" (click)="login()"><b>Login</b></button></p>
+    </mat-card>
+</div>
+</div>
