@@ -6,64 +6,27 @@ import mysql.connector
 from db_config import db_config
 import requests
 import pandas as pd
-import numpy as np
 from bs4 import BeautifulSoup
-import spacy
-nlp = spacy.load('en_core_web_sm')
 
 # Create a tokenizer object
 bert_tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
 
-# fetch the pretrained model
+# Fetch the pretrained model
 pre_trained_model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
 
-positive_paragraph = ["The radiant morning sun gently kissed the dew-covered grass, casting a warm glow across the "
-                      "tranquil meadow. Birds chirped happily in the clear azure sky, creating a symphony of nature's "
-                      "joyful melodies. Fragrant flowers bloomed, painting the landscape with a vibrant palette of "
-                      "colors, a testament to life's beauty. Laughter echoed through the air as families gathered for "
-                      "a picnic, sharing moments of joy and connection. The gentle breeze carried the sweet scent of "
-                      "freshly baked cookies, inviting everyone to savor the simple pleasures. Children played games "
-                      "with boundless enthusiasm, their innocent laughter echoing like music in the open space. Each "
-                      "moment felt like a precious gift, wrapped in the warmth of love and gratitude, "
-                      "creating memories to cherish. Smiles adorned the faces of friends as they shared stories, "
-                      "creating an atmosphere of camaraderie and friendship. As the sun began to set, "
-                      "casting a golden hue on the horizon, the day unfolded as a perfect symphony of happiness. This "
-                      "idyllic scene captured the essence of a blissful day, a testament to the beauty that exists in "
-                      "the simplest moments."]
-negative_paragraph = ["The gloomy overcast sky hung low, casting a shadow over the desolate landscape, devoid of any "
-                      "signs of life. Crows cawed ominously, their harsh calls echoing through the barren trees, "
-                      "creating a sense of eerie solitude. Barren branches swayed in the chilling wind, "
-                      "a stark reminder of the harshness of the unforgiving environment. The air felt heavy with an "
-                      "unspoken tension, as if the world itself carried the weight of countless sorrows. Abandoned "
-                      "buildings stood as silent witnesses to the decay and neglect that had befallen this "
-                      "once-thriving community. A somber mood enveloped the surroundings, with the only sound being "
-                      "the distant howling of a forlorn wind. Faces etched with weariness and despair wandered "
-                      "aimlessly, carrying the burdens of unspoken hardships. The echoes of shattered dreams "
-                      "resonated in the vacant streets, haunted by the memories of what once was. Every step felt "
-                      "like a journey through a melancholic labyrinth, where hope had long since lost its way. In "
-                      "this desolate realm, the bitter taste of solitude lingered, and the very air seemed to mourn "
-                      "the loss of brighter days."]
-neutral_paragraph = ["The sky exhibited a calm and clear demeanor, with a gentle breeze playing through the branches "
-                     "of the trees. Everyday activities continued in the bustling town, with people going about their "
-                     "routines with a sense of normalcy. A well-tended garden showcased an array of plants, "
-                     "neither flourishing nor withering, but simply existing in equilibrium. The rhythmic ticking of "
-                     "a clock in a quiet room provided a steady background noise, a constant in the passage of time. "
-                     "Ordinary conversations unfolded in a local cafe, where the exchanges were neither exceptionally "
-                     "joyful nor overly somber. A cat lazily stretched in the sunlight filtering through the window, "
-                     "embodying a serene and uncomplicated existence. The scent of freshly brewed coffee permeated "
-                     "the air, creating a neutral and familiar olfactory backdrop. The daily commute saw people "
-                     "moving with purpose, navigating the urban landscape with a practiced and indifferent demeanor. "
-                     "Office spaces hummed with the usual sounds of typing and occasional chatter, a routine scene "
-                     "repeated day after day. Life moved forward, neither particularly remarkable nor distressingly "
-                     "challenging, as the world turned in its predictable cadence."]
 
+def import_data():
+    """
+        Imports data containing company names and news article URLs from the database.
 
-def import_article_links():
+        Returns:
+            list: A list of tuples containing company name and article URL.
+        """
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT article_link FROM articles
+            SELECT company_name, news_url FROM news_articles
         ''')
         query = cursor.fetchall()
         conn.commit()
@@ -76,13 +39,24 @@ def import_article_links():
 
 
 def web_scraper(web_url):
+    """
+        Scrapes paragraphs from a given news article URL.
+
+        Args:
+            web_url (str): The URL of the news article.
+
+        Returns:
+            list: A list of scraped paragraphs from the article, or None if an error occurs.
+        """
     try:
         response = requests.get(web_url)
         response.encoding = 'utf-8'
         html = response.content
-        # Creating a BeautifulSoup object from the HTML
-        soup = BeautifulSoup(html, features="lxml")
 
+        # Creating a BeautifulSoup object from the HTML
+        soup = BeautifulSoup(html, features="html.parser")
+
+        # Find all divs in the html
         divs = soup.find_all('div')
 
         paragraphs = []
@@ -96,102 +70,177 @@ def web_scraper(web_url):
         return paragraphs
 
     except requests.RequestException as e:
-        print(f"Error fetching data from {url}: {e} ")
+        print(f"Error fetching data from {web_url}: {e} ")
         return None
     except Exception as e:
         print(f"An unexpected error occurred in Scraper: {e} ")
 
 
-def cleaner(p_list):
+def preprocessor(paragraph_list):
+    """
+        Preprocesses a list of paragraphs into a DataFrame with a 'Sentence' column.
+
+        Args:
+            paragraph_list (list): A list of strings representing paragraphs.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing a 'Sentence' column with split sentences.
+        """
     try:
         sentence_list = []
-        for st in p_list:
-            sentence = st.split('. ')
-            sentence_list.extend(sentence)
+        for paragraph in paragraph_list:
+            sentences = paragraph.split('. ')  # Split by full stops with spaces
+            sentence_list.extend(sentences)
 
-        pd.set_option('display.max_columns', 4)
-        return pd.DataFrame(sentence_list, columns=['Sentence'])
+        df = pd.DataFrame(sentence_list, columns=['Sentence'])
+        # pd.set_option('expand_frame_repr', False)
+        return df
 
     except Exception as e:
-        print(f"An unexpected error occurred in Cleaner: {e} ")
+        print(f"An unexpected error occurred in Preprocessor: {e} ")
         return pd.DataFrame(columns=['Sentence'])
 
 
-def senti_analyzer(df, tokenizer, model):
+def sentiment_analyzer(df, tokenizer, model):
+    """
+        Analyze sentiment of sentences using the pretrained model.
 
-    for i in tqdm(df.index):
-        try:
-            sentence = df.loc[i, 'Sentence']
-        except:
-            return print(' \'Sentence\' column might be missing from dataframe')
+        Args:
+            df (pd.DataFrame): DataFrame containing sentences.
+            tokenizer: Tokenizer object.
+            model: Pretrained model.
 
-        # Pre-process input phrase
-        input = tokenizer(sentence, padding=True, truncation=True, return_tensors='pt')
-
-        # Estimate output
-        output = model(**input)
-
-        # Pass model output logits through a softmax layer.
-        predictions = torch.nn.functional.softmax(output.logits, dim=-1)
-        df.loc[i, 'Positive'] = predictions[0][0].tolist()
-        df.loc[i, 'Negative'] = predictions[0][1].tolist()
-        df.loc[i, 'Neutral'] = predictions[0][2].tolist()
-    # rearrange column order
-    try:
-        df = df[
-            ['Sentence', 'Positive', 'Negative', 'Neutral']]
-    except:
-        pass
-    return df
-
-
-def article_sentiment(df):
-
-    positive = []
-    negative = []
-    neutral = []
-
+        Returns:
+            pd.DataFrame: DataFrame containing sentiment analysis results.
+        """
     try:
         for i in tqdm(df.index):
-            if df.loc[i, 'Positive'] > 0.1:
-                positive.append(df.loc[i, 'Positive'])
-            if df.loc[i, 'Negative'] > 0.1:
-                negative.append(df.loc[i, 'Negative'])
-            if df.loc[i, 'Neutral'] > 0.1:
-                neutral.append(df.loc[i, 'Neutral'])
+            sentence = df.loc[i, 'Sentence']
 
-        if df.empty:
-            print("No data in Dataframe")
-        else:
-            c_positive = np.nanmean(positive)
-            c_negative = np.nanmean(negative)
-            c_neutral = np.nanmean(neutral)
+            # Pre-process input phrase
+            inputs = tokenizer(sentence, padding=True, truncation=True, return_tensors='pt')
 
-            print(positive, negative, neutral)
-            return c_positive, len(positive), c_negative, len(negative), c_neutral, len(neutral)
+            # Estimate output
+            output = model(**inputs)
+
+            # Pass model output logits through a softmax layer.
+            predictions = torch.nn.functional.softmax(output.logits, dim=-1)
+            df.loc[i, 'Positive'] = predictions[0][0].tolist()
+            df.loc[i, 'Negative'] = predictions[0][1].tolist()
+            df.loc[i, 'Neutral'] = predictions[0][2].tolist()
+
+        df = df[['Sentence', 'Positive', 'Negative', 'Neutral']]
+        return df
 
     except Exception as e:
-        print(f"Dataframe is Empty: {e}")
+        print(f"An unexpected error occurred in Sentiment Analyzer: {e} ")
+        return pd.DataFrame(columns=['Sentence', 'Positive', 'Negative', 'Neutral'])
+
+
+def classifier(df):
+    """
+        Classify sentiment based on sentiment scores.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing sentiment analysis results.
+
+        Returns: str: Overall sentiment classification ('Very Negative', 'Slightly Negative', 'Neutral',
+                                                        'Slightly Positive', or 'Very Positive').
+    """
+
+    try:
+        positive = []
+        negative = []
+        neutral = []
+
+        for i in tqdm(df.index):
+            if df.loc[i, 'Positive'] < 0.15 and df.loc[i, 'Negative'] < 0.15:
+                neutral.append(df.loc[i, 'Neutral'])
+            elif df.loc[i, 'Positive'] > df.loc[i, 'Negative']:
+                positive.append(df.loc[i, 'Positive'])
+            elif df.loc[i, 'Positive'] < df.loc[i, 'Negative']:
+                neutral.append(df.loc[i, 'Negative'])
+
+        sentiment_score = (len(positive) - len(negative)) / len(df.index)
+        value = None
+
+        if -1 <= sentiment_score < -0.5:
+            value = 'Very Negative'
+        elif -0.5 <= sentiment_score < -0.1:
+            value = 'Slightly Negative'
+        elif -0.1 <= sentiment_score <= 0.1:
+            value = 'Neutral'
+        elif 0.1 < sentiment_score <= 0.5:
+            value = 'Slightly Positive'
+        elif 0.5 < sentiment_score <= 1:
+            value = 'Very Positive'
+
+        return value
+
+    except Exception as e:
+        print(f"An unexpected error occurred in Classifier: {e}")
+
+
+def add_to_database(company, article_url, sentiment_value):
+    """
+        Add sentiment analysis results to the database.
+
+        Args:
+            company (str): Company name.
+            article_url (str): URL of the article.
+            sentiment_value (str): Sentiment classification.
+        """
+    try:
+        # Connect to MySQL database
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Create a table if it doesn't exist
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sentiment_table (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                company VARCHAR(255),
+                article_url TEXT,
+                sentiment VARCHAR(255)
+            )
+        ''')
+
+        cursor.execute('''
+            INSERT IGNORE INTO sentiment_table (company, article_url, sentiment)
+            VALUES (%s, %s, %s)
+        ''', (company, article_url, sentiment_value))
+
+        # Commit changes and close the connection
+        conn.commit()
+        conn.close()
+
+        print(f"{company}, '{article_url}', {sentiment_value} saved to the database.")
+
+    except mysql.connector.Error as e:
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
     try:
-        article_links = import_article_links()
-        if not article_links:
-            print("Article List is empty")
+        data = import_data()
+        if data:
+            for row in data:
+                company_name = row[0]
+                url = row[1]
+                paragraphs = web_scraper(url)
+                if paragraphs:
+                    sentence_df = preprocessor(paragraphs)
+                    if not sentence_df.empty:
+                        prediction = sentiment_analyzer(sentence_df, bert_tokenizer, pre_trained_model)
+                        sentiment = classifier(prediction)
+                        add_to_database(company_name, url, sentiment)
+                        time.sleep(2)
+                    else:
+                        print(f"Could not find/retrieve data from {url}")
+                else:
+                    print(f"Could not scrap data from {url}")
         else:
-            # for link in article_links:
-            url = article_links[1][0]
-            sentence_df = cleaner(web_scraper(url))
-            if sentence_df.empty:
-                print(f"Could not find/retrieve data from {url}")
-            else:
-                result = senti_analyzer(sentence_df, bert_tokenizer, pre_trained_model)
-                print(result.to_string())
-                acc_result = article_sentiment(result)
-                print(acc_result)
-                print(url)
-                time.sleep(2)
+            print("Failed to import data from the database")
 
     except Exception as e:
         print(f"An unexpected error occurred in execution : {e}")
