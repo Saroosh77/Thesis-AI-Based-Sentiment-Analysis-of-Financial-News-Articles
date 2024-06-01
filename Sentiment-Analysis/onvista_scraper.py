@@ -3,12 +3,23 @@ import mysql.connector
 from db_config import db_config
 from bs4 import BeautifulSoup
 from datetime import datetime
-import json
 
 
-def web_scraper():
+def web_scraper(entity_value, from_date=None, to_date=None):
+    """
+    Scrape articles from the onvista.de website.
+
+    Returns:
+        list: List of tuples containing article details (published_date, news_title, news_url).
+    """
     try:
-        base_url = f"https://www.onvista.de/news/finder?entityType=STOCK&entityValue=81348"
+        base_url = f"https://www.onvista.de/news/finder?entityType=STOCK&entityValue={entity_value}"
+        if from_date is not None or to_date is not None:
+            base_url = base_url + '&timestampPublication='
+            if from_date is not None:
+                base_url = base_url + from_date
+            if to_date is not None:
+                base_url = base_url + ';' + to_date
 
         response = requests.get(base_url)
         response.encoding = 'utf-8'
@@ -69,7 +80,7 @@ def save_to_database(query, article_list):
             cursor.execute('''
                 INSERT IGNORE INTO news_articles (published_date, company_name, news_title, news_url)
                 VALUES (%s, %s, %s, %s)
-            ''', (date, query, title, "https://www.onvista.de/"+link))
+            ''', (date, query, title, "https://www.onvista.de/" + link))
 
         # Commit changes and close the connection
         conn.commit()
@@ -85,5 +96,5 @@ def save_to_database(query, article_list):
 if __name__ == "__main__":
     # search_query = input("Enter the search query: ")
 
-    articles = web_scraper()
+    articles = web_scraper(81348)  # , '2024-01-01', '2024-02-20')
     save_to_database('Deutsche Bank', articles)

@@ -59,13 +59,13 @@ def web_scraper(web_url):
         # Find all divs in the html
         divs = soup.find_all('div')
 
-        paragraphs = []
+        p_list = []
         for div in divs:
             p_tags = div.find_all('p')
             for p in p_tags:
                 p_tag = p.text if p else None
-                if p_tag not in paragraphs and p_tag is not None:
-                    paragraphs.append(p_tag)
+                if p_tag not in p_list and p_tag is not None:
+                    p_list.append(p_tag)
 
         return paragraphs
 
@@ -233,7 +233,7 @@ if __name__ == "__main__":
                     if not sentence_df.empty:
                         prediction = sentiment_analyzer(sentence_df, bert_tokenizer, pre_trained_model)
                         sentiment = classifier(prediction)
-                        add_to_database(company_name, url, sentiment)
+                        # add_to_database(company_name, url, sentiment)
                         time.sleep(2)
                     else:
                         print(f"Could not find/retrieve data from {url}")
@@ -242,5 +242,5 @@ if __name__ == "__main__":
         else:
             print("Failed to import data from the database")
 
-    except Exception as e:
-        print(f"An unexpected error occurred in execution : {e}")
+    except Exception as f:
+        print(f"An unexpected error occurred in execution : {f}")
