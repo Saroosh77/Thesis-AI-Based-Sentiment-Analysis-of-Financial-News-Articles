@@ -5,6 +5,8 @@ from db_config import db_config
 
 app = Flask(__name__)
 CORS(app)
+connect = mysql.connector.connect(**db_config)
+
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -17,11 +19,11 @@ def login():
 
     # Connect to MySQL database
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
+        cursor = connect.cursor()
         # Validate Credentials
         cursor.execute('SELECT * FROM user WHERE email = %s AND userpassword = %s', (email, password))
         account = cursor.fetchone()
+        cursor.close()
 
         if account:
             return jsonify({'message': 'Login Successful'}), 200
@@ -30,6 +32,28 @@ def login():
 
     except mysql.connector.Error as err:
         return jsonify({'message': 'Database error: ' + str(err)}), 500
+
+
+@app.route('/api/sentiment', methods=['GET'])
+def get_sentiment_analysis():
+    cursor = connect.cursor()
+    cursor.execute('SELECT * FROM sentiment_results')
+    results = cursor.fetchall()
+    cursor.close()
+
+    rows = []
+    for row in results:
+        item = {
+            'id': row[0],
+            'company': row[1],
+            'published_date': row[2],
+            'article_title': row[3],
+            'article_url': row[4],
+            'sentiment': row[5]
+        }
+        rows.append(item)
+
+    return jsonify(rows)
 
 
 if __name__ == '__main__':

@@ -1,1 +1,31 @@
-<p>dashboard works!</p>
+<div>
+    <h1>SEMANTIC ANALYSIS OF NEWS ARTICLES</h1>
+</div>
+
+<div *ngIf="sentiment_results.length">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Company</th>
+                <th>Published Date</th>
+                <th>Title</th>
+                <th>URL</th>
+                <th>Sentiment</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of sentiment_results">
+                <td>{{ row.id }}</td>
+                <td>{{ row.company }}</td>
+                <td>{{ row.published_date | date }}</td>
+                <td>{{ row.article_title }}</td>
+                <td>{{ row.article_url }}</td>
+                <td>{{ row.sentiment }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div *ngIf="!sentiment_results.length">
+    <p>No Results Found</p>
+</div>

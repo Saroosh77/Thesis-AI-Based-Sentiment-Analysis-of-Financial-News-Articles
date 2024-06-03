@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
-import { User } from '../user';
+import { Sentiment } from '../sentiment';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -13,15 +12,14 @@ const httpOptions = {
 @Injectable({
   providedIn: 'root'
 })
-
-export class LoginService {
+export class ArticleService {
 
   private url = 'http://127.0.0.1:5000';
 
   constructor(private http: HttpClient) { }
 
-  // GET users from the server 
-  loginUser(user: User) {
-    return this.http.post<User>(this.url + "/api/login", user, httpOptions)
+  getArticles(): Observable<Sentiment[]> {
+    return this.http.get<Sentiment[]>(this.url + '/api/sentiment');
   }
+
 }

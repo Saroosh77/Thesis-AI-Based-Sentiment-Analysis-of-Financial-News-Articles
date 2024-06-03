@@ -26,7 +26,7 @@ def import_data():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT company_name, news_url FROM news_articles
+            SELECT company_name, published_date, news_title, news_url FROM news_articles ORDER BY published_date DESC
         ''')
         query = cursor.fetchall()
         conn.commit()
@@ -67,7 +67,7 @@ def web_scraper(web_url):
                 if p_tag not in p_list and p_tag is not None:
                     p_list.append(p_tag)
 
-        return paragraphs
+        return p_list
 
     except requests.RequestException as e:
         print(f"Error fetching data from {web_url}: {e} ")
@@ -181,15 +181,18 @@ def classifier(df):
         print(f"An unexpected error occurred in Classifier: {e}")
 
 
-def add_to_database(company, article_url, sentiment_value):
+def add_to_database(company, published_date, article_title, article_url, sentiment_value):
     """
         Add sentiment analysis results to the database.
 
         Args:
             company (str): Company name.
+            published_date (date): published date of article.
+            article_title (str): Title of the article.
             article_url (str): URL of the article.
             sentiment_value (str): Sentiment classification.
         """
+
     try:
         # Connect to MySQL database
         conn = mysql.connector.connect(**db_config)
@@ -197,24 +200,26 @@ def add_to_database(company, article_url, sentiment_value):
 
         # Create a table if it doesn't exist
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS sentiment_table (
+            CREATE TABLE IF NOT EXISTS sentiment_results (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 company VARCHAR(255),
+                published_date DATE,
+                article_title TEXT,
                 article_url TEXT,
                 sentiment VARCHAR(255)
             )
         ''')
 
         cursor.execute('''
-            INSERT IGNORE INTO sentiment_table (company, article_url, sentiment)
-            VALUES (%s, %s, %s)
-        ''', (company, article_url, sentiment_value))
+            INSERT IGNORE INTO sentiment_results (company, published_date, article_title, article_url, sentiment)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (company, published_date, article_title, article_url, sentiment_value))
 
         # Commit changes and close the connection
         conn.commit()
         conn.close()
 
-        print(f"{company}, '{article_url}', {sentiment_value} saved to the database.")
+        print(f"{company}, '{published_date} , '{article_title} , '{article_url}', {sentiment_value} saved to the database.")
 
     except mysql.connector.Error as e:
         print(f"Error: {e}")
@@ -226,14 +231,16 @@ if __name__ == "__main__":
         if data:
             for row in data:
                 company_name = row[0]
-                url = row[1]
+                p_date = row[1]
+                title = row[2]
+                url = row[3]
                 paragraphs = web_scraper(url)
                 if paragraphs:
                     sentence_df = preprocessor(paragraphs)
                     if not sentence_df.empty:
                         prediction = sentiment_analyzer(sentence_df, bert_tokenizer, pre_trained_model)
                         sentiment = classifier(prediction)
-                        # add_to_database(company_name, url, sentiment)
+                        add_to_database(company_name, p_date, title, url, sentiment)
                         time.sleep(2)
                     else:
                         print(f"Could not find/retrieve data from {url}")

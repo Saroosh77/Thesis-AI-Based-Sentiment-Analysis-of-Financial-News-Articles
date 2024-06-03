@@ -47,7 +47,7 @@ def save_to_database(query, article_list):
 
     # Create a table if it doesn't exist
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS articles (
+        CREATE TABLE IF NOT EXISTS google_articles (
             id INT AUTO_INCREMENT PRIMARY KEY,
             company_name VARCHAR(255),
             article_link TEXT
