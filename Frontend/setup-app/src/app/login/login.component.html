@@ -1,30 +1,25 @@
-<div class="loginh1">
+<div class="login-container">
 <h1>Login</h1>
 
 <br>
 
 <div>
     <mat-card class="logincard">
-        <!-- <form [formGroup]="loginForm" (ngSubmit)="login()"> -->
-            <div>
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+            <div class="from-group">
                 <mat-label><b>E-Mail</b></mat-label><br><br>
                 <input type="email" id="email" name="email" placeholder="Email" required formControlName="email"  />
-                <!-- <div *ngIf="formControls['email'].errors">
-                    <mat-error *ngIf="formControls['email'].errors?.['required']">{{'EmailInput'}}</mat-error>
-                    <mat-error *ngIf="formControls['email'].errors?.['email']">{{'EmailValid'}}</mat-error>
-                </div> -->
-            </div>
+                    <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Email is required</mat-error>
+                    <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Invalid Email</mat-error>
+           </div>
             <br>
-            <mat-label><b>{{'Password'}}</b></mat-label><br>
-            <div>
-                <input type="password" id="password" name="password" placeholder="Password" required formControlName="password"> <!--[ngClass]="{ 'has-error': formControls['password'].errors }"> -->
-                <!-- <div *ngIf="formControls['password'].errors">
-                    <mat-error *ngIf="formControls['password'].errors?.['required']">{{'PasswordInput'}}</mat-error>
-                    <mat-error *ngIf="formControls['password'].errors?.['password']">{{'PasswordValid'}}</mat-error>
-                </div> -->
+            <mat-label><b>Password</b></mat-label><br>
+            <div class="from-group">
+                <input type="password" id="password" name="password" placeholder="Password" required formControlName="password">
+                    <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
             </div>
-            <!-- <br> -->
             <p><button mat-raised-button class="button" (click)="login()"><b>Login</b></button></p>
+        </form>
     </mat-card>
 </div>
 </div>
