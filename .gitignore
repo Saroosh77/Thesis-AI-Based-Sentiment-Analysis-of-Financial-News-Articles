@@ -1,1 +1,7 @@
 /Sentiment-Analysis/extra.py
+/Sentiment-Analysis/.idea
+/Sentiment-Analysis/__pycache__
+/Frontend/node_modules
+/Frontend/package.json
+/Frontend/package-lock.json
+
