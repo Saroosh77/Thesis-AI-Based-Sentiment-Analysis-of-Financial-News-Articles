@@ -65,7 +65,7 @@ def save_to_database(query, article_list):
 
         # Create a table if it doesn't exist
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS news_articles (
+            CREATE TABLE IF NOT EXISTS onvista_articles (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 company_name VARCHAR(255),
                 published_date DATE,
