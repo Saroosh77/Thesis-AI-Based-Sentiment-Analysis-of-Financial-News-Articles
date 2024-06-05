@@ -1,4 +1,28 @@
-table {
+  .heading {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  button {
+    padding: 5px;
+    margin-left: 3vw;
+    background-color: white;
+    border-radius: 25px;
+    font-weight: bold;
+  }
+
+  .wrapping {
+    width: 100%;
+  }
+
+  .wrapping td {
+    white-space: normal; /* Allow normal wrapping */
+    word-wrap: break-word; /* Ensure long words break correctly */
+    word-break: break-word; /* Ensure long words break correctly */
+  }
+
+  table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
@@ -7,12 +31,14 @@ table {
     box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
   }
   
-  table th, table td {
+  table td {
     padding: 12px;
     border: 1px solid #ddd;
   }
   
   table th {
+    padding: 12px;
+    border: 2px solid #ddd;
     background-color: #f2f2f2;
   }
   

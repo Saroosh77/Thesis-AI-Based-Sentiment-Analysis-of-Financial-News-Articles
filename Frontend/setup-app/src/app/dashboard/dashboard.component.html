@@ -2,30 +2,140 @@
     <h1>SEMANTIC ANALYSIS OF NEWS ARTICLES</h1>
 </div>
 
-<div *ngIf="sentiment_results.length">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Company</th>
-                <th>Published Date</th>
-                <th>Title</th>
-                <th>URL</th>
-                <th>Sentiment</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let row of sentiment_results">
-                <td>{{ row.id }}</td>
-                <td>{{ row.company }}</td>
-                <td>{{ row.published_date | date }}</td>
-                <td>{{ row.article_title }}</td>
-                <td>{{ row.article_url }}</td>
-                <td>{{ row.sentiment }}</td>
-            </tr>
-        </tbody>
-    </table>
+<div class="heading">
+    <h2>GOOGLE.COM</h2>
+    <h2>ONVISTA.DE</h2>
 </div>
-<div *ngIf="!sentiment_results.length">
-    <p>No Results Found</p>
+
+<div class="heading">
+    <div>
+        <button class="button" (click)="getGoogleArticles()">List of Articles</button>
+        <button class="button" (click)="getGoogleResults()">Sentiment Results</button>
+    </div>
+    <div>
+        <button class="button" (click)="getOnvistaArticles()">List of Articles</button>
+        <button class="button" (click)="getOnvistaResults()">Sentiment Results</button>
+    </div>
+</div>
+<br>
+<button class="button" (click)="resetDivs()">Reset</button>
+<br>
+<div>
+    <div *ngIf="display1">
+        <div *ngIf="google_sentiment_results.length">
+            <h2>SENTIMENT RESULTS FROM ARTICLES EXTRACTED FROM GOOGLE</h2>
+            <table class="wrapping">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Company</th>
+                        <th>Published Date</th>
+                        <th>Title</th>
+                        <th>URL</th>
+                        <th>Sentiment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of google_sentiment_results">
+                        <td>{{ row.id }}</td>
+                        <td>{{ row.company }}</td>
+                        <td>{{ row.published_date | date }}</td>
+                        <td>{{ row.article_title }}</td>
+                        <td>{{ row.article_url }}</td>
+                        <td>{{ row.sentiment }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div *ngIf="!google_sentiment_results.length">
+            <p>No Results Found</p>
+        </div>
+    </div>
+
+    <div *ngIf="display2">
+        <div *ngIf="onvista_sentiment_results.length">
+            <h2>SENTIMENT RESULTS FROM ARTICLES EXTRACTED FROM ONVISTA.DE</h2>
+            <table class="wrapping">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Company</th>
+                        <th>Published Date</th>
+                        <th>Title</th>
+                        <th>URL</th>
+                        <th>Sentiment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of onvista_sentiment_results">
+                        <td>{{ row.id }}</td>
+                        <td>{{ row.company }}</td>
+                        <td>{{ row.published_date | date }}</td>
+                        <td>{{ row.article_title }}</td>
+                        <td>{{ row.article_url }}</td>
+                        <td>{{ row.sentiment }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div *ngIf="!onvista_sentiment_results.length">
+            <p>No Results Found</p>
+        </div>
+    </div>
+
+    <div *ngIf="display3">
+        <div *ngIf="onvista_articles.length">
+            <h2>LIST OF ARTICLES EXTRACTED FROM ONVISTA.DE</h2>
+            <table class="wrapping">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Company</th>
+                        <th>Published Date</th>
+                        <th>Title</th>
+                        <th>URL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of onvista_articles">
+                        <td>{{ row.id }}</td>
+                        <td>{{ row.company }}</td>
+                        <td>{{ row.published_date | date }}</td>
+                        <td>{{ row.article_title }}</td>
+                        <td>{{ row.article_url }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div *ngIf="!onvista_articles.length">
+            <p>No Results Found</p>
+        </div>
+    </div>
+
+    <div *ngIf="display4">
+        <div *ngIf="google_articles.length">
+            <h2>LIST OF ARTICLES EXTRACTED FROM GOOGLE</h2>
+            <table class="wrapping">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Company</th>
+                        <th>Published Date</th>
+                        <th>URL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of google_articles">
+                        <td>{{ row.id }}</td>
+                        <td>{{ row.company }}</td>
+                        <td>{{ row.published_date | date }}</td>
+                        <td>{{ row.article_url }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div *ngIf="!google_articles.length">
+            <p>No Results Found</p>
+        </div>
+    </div>
 </div>

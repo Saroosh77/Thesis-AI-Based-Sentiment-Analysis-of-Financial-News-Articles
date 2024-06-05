@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { Sentiment } from '../sentiment';
+import { Article, Sentiment } from '../sentiment';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -18,8 +18,20 @@ export class ArticleService {
 
   constructor(private http: HttpClient) { }
 
-  getArticles(): Observable<Sentiment[]> {
-    return this.http.get<Sentiment[]>(this.url + '/api/sentiment');
+  getGoogleResults(): Observable<Sentiment[]> {
+    return this.http.get<Sentiment[]>(this.url + '/api/google/results');
+  }
+
+  getGoogleArticles(): Observable<Article[]> {
+    return this.http.get<Article[]>(this.url + '/api/google/articles');
+  }
+  
+  getOnvistaArticles(): Observable<Article[]> {
+    return this.http.get<Article[]>(this.url + '/api/onvista/articles');
+  }
+
+  getOnvistaResults(): Observable<Sentiment[]> {
+    return this.http.get<Sentiment[]>(this.url + '/api/onvista/results');
   }
 
 }
