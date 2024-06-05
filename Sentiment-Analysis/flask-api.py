@@ -34,10 +34,10 @@ def login():
         return jsonify({'message': 'Database error: ' + str(err)}), 500
 
 
-@app.route('/api/sentiment', methods=['GET'])
-def get_sentiment_analysis():
+@app.route('/api/google/results', methods=['GET'])
+def get_google_search_results():
     cursor = connect.cursor()
-    cursor.execute('SELECT * FROM sentiment_results')
+    cursor.execute('SELECT * FROM google_search_results')
     results = cursor.fetchall()
     cursor.close()
 
@@ -50,6 +50,69 @@ def get_sentiment_analysis():
             'article_title': row[3],
             'article_url': row[4],
             'sentiment': row[5]
+        }
+        rows.append(item)
+
+    return jsonify(rows)
+
+
+@app.route('/api/google/articles', methods=['GET'])
+def get_google_articles():
+    cursor = connect.cursor()
+    cursor.execute('SELECT * FROM google_news_articles')
+    results = cursor.fetchall()
+    cursor.close()
+
+    rows = []
+    for row in results:
+        item = {
+            'id': row[0],
+            'company': row[1],
+            'published_date': row[2],
+            'article_url': row[3],
+        }
+        rows.append(item)
+
+    return jsonify(rows)
+
+
+@app.route('/api/onvista/results', methods=['GET'])
+def get_onvista_results():
+    cursor = connect.cursor()
+    cursor.execute('SELECT * FROM onvista_sentiment_results')
+    results = cursor.fetchall()
+    cursor.close()
+
+    rows = []
+    for row in results:
+        item = {
+            'id': row[0],
+            'company': row[1],
+            'published_date': row[2],
+            'article_title': row[3],
+            'article_url': row[4],
+            'sentiment': row[5]
+        }
+        rows.append(item)
+
+    return jsonify(rows)
+
+
+@app.route('/api/onvista/articles', methods=['GET'])
+def get_onvista_articles():
+    cursor = connect.cursor()
+    cursor.execute('SELECT * FROM onvista_articles')
+    results = cursor.fetchall()
+    cursor.close()
+
+    rows = []
+    for row in results:
+        item = {
+            'id': row[0],
+            'company': row[1],
+            'published_date': row[2],
+            'article_title': row[3],
+            'article_url': row[4],
         }
         rows.append(item)
 
