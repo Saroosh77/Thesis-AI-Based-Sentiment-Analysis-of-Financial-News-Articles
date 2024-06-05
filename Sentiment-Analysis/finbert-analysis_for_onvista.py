@@ -26,7 +26,7 @@ def import_data():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT company_name, published_date, news_title, news_url FROM news_articles ORDER BY published_date DESC
+            SELECT company_name, published_date, news_title, news_url FROM onvista_articles ORDER BY published_date DESC
         ''')
         query = cursor.fetchall()
         conn.commit()
@@ -90,7 +90,8 @@ def preprocessor(paragraph_list):
         sentence_list = []
         for paragraph in paragraph_list:
             sentences = paragraph.split('. ')  # Split by full stops with spaces
-            sentence_list.extend(sentences)
+            filtered_sentences = [sentence for sentence in sentences if sentence.strip()]
+            sentence_list.extend(filtered_sentences)
 
         df = pd.DataFrame(sentence_list, columns=['Sentence'])
         # pd.set_option('expand_frame_repr', False)
@@ -159,7 +160,7 @@ def classifier(df):
             elif df.loc[i, 'Positive'] > df.loc[i, 'Negative']:
                 positive.append(df.loc[i, 'Positive'])
             elif df.loc[i, 'Positive'] < df.loc[i, 'Negative']:
-                neutral.append(df.loc[i, 'Negative'])
+                negative.append(df.loc[i, 'Negative'])
 
         sentiment_score = (len(positive) - len(negative)) / len(df.index)
         value = None
@@ -200,7 +201,7 @@ def add_to_database(company, published_date, article_title, article_url, sentime
 
         # Create a table if it doesn't exist
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS sentiment_results (
+            CREATE TABLE IF NOT EXISTS onvista_sentiment_results (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 company VARCHAR(255),
                 published_date DATE,
@@ -211,7 +212,7 @@ def add_to_database(company, published_date, article_title, article_url, sentime
         ''')
 
         cursor.execute('''
-            INSERT IGNORE INTO sentiment_results (company, published_date, article_title, article_url, sentiment)
+            INSERT IGNORE INTO onvista_sentiment_results (company, published_date, article_title, article_url, sentiment)
             VALUES (%s, %s, %s, %s, %s)
         ''', (company, published_date, article_title, article_url, sentiment_value))
 
