@@ -69,8 +69,8 @@ def save_to_database(query, article_list):
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 company_name VARCHAR(255),
                 published_date DATE,
-                news_title TEXT,
-                news_url TEXT
+                article_title TEXT,
+                article_url TEXT
             )
         ''')
 
@@ -78,7 +78,7 @@ def save_to_database(query, article_list):
         for link_date, title, link, in article_list:
             date = datetime.strptime(link_date, "%d.%m.%Y").date()
             cursor.execute('''
-                INSERT IGNORE INTO news_articles (published_date, company_name, news_title, news_url)
+                INSERT IGNORE INTO onvista_articles (published_date, company_name, article_title, article_url)
                 VALUES (%s, %s, %s, %s)
             ''', (date, query, title, "https://www.onvista.de/" + link))
 

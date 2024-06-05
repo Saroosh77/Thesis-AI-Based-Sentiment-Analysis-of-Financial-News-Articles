@@ -1,6 +1,7 @@
 import mysql.connector
 import requests
 import json
+from db_config import db_config
 
 
 def get_articles(query):
@@ -25,17 +26,12 @@ def get_articles(query):
 
 def save_to_database(query, article_list):
     # Connect to MySQL database
-    conn = mysql.connector.connect(
-        host='127.0.0.1',
-        user='root',
-        password='Beta@22110266',
-        database='shares'
-    )
+    conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
 
     # Create a table if it doesn't exist
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS api_articles (
+        CREATE TABLE IF NOT EXISTS news_api_articles (
             id INT AUTO_INCREMENT PRIMARY KEY,
             published_date DATE,
             company_name VARCHAR(255),
@@ -47,7 +43,7 @@ def save_to_database(query, article_list):
     # Insert data into the table
     for date, title, link in article_list:
         cursor.execute('''
-            INSERT IGNORE INTO api_articles (published_date, company_name, title, article_url)
+            INSERT IGNORE INTO news_api_articles (published_date, company_name, title, article_url)
             VALUES (%s, %s, %s, %s)
         ''', (date, query, title, link))
 
