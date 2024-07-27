@@ -1,67 +1,99 @@
-  .heading {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-  }
+/* Container for headings */
+.heading {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 20px; /* Added margin for spacing */
+}
 
-  button {
-    padding: 5px;
-    margin-left: 3vw;
-    background-color: white;
-    border-radius: 25px;
-    font-weight: bold;
-  }
+/* Button styling */
+button {
+  padding: 5px 15px; /* Added padding for better button size */
+  margin-left: 3vw;
+  background-color: white;
+  border: 1px solid #ddd; /* Added border for better visibility */
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer; /* Change cursor to pointer */
+  transition: background-color 0.3s ease; /* Smooth transition */
+}
 
-  .wrapping {
-    width: 100%;
-  }
+button:hover {
+  background-color: #f2f2f2; /* Slight change on hover */
+}
 
-  .wrapping td {
-    white-space: normal; /* Allow normal wrapping */
-    word-wrap: break-word; /* Ensure long words break correctly */
-    word-break: break-word; /* Ensure long words break correctly */
-  }
+/* Table container for wrapping */
+.wrapping {
+  width: 100%;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 18px;
-    text-align: left;
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-  }
-  
-  table td {
-    padding: 12px;
-    border: 1px solid #ddd;
-  }
-  
-  table th {
-    padding: 12px;
-    border: 2px solid #ddd;
-    background-color: #f2f2f2;
-  }
-  
-  table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  table tr:hover {
-    background-color: #f1f1f1;
-  }
-  
-  table th, table td {
-    text-align: center;
-  }
-  
-  h1, h2 {
-    text-align: center;
-    color: #333;
-  }
-  
-  p {
-    text-align: center;
-    color: #999;
-    font-size: 16px;
-  }
-  
+/* Table cell styling for wrapping */
+.wrap {
+  white-space: normal; /* Allow normal wrapping */
+  word-wrap: break-word; /* Ensure long words break correctly */
+  word-break: break-word; /* Ensure long words break correctly */
+}
+
+
+/* General table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 18px;
+  text-align: center;
+  justify-content: center;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  background-color: white; /* Ensuring the table background is white */
+  color: black; /* Ensuring the text is black */
+}
+
+/* Table cells */
+table td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  vertical-align: middle; /* Center align vertically */
+  background-color: white; /* Ensuring table cells are white */
+  color: black; /* Ensuring table cell text is black */
+}
+
+/* Table headers */
+table th {
+  padding: 12px;
+  border: 2px solid #ddd;
+  vertical-align: middle; /* Center align vertically */
+  background-color: #f2f2f2; /* Light grey for header */
+  color: black; /* Ensuring table header text is black */
+}
+
+
+/* Row hover effect */
+table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Center align headers and cells */
+table th, table td {
+  justify-content: center;
+  text-align: center;
+}
+
+/* Header styling */
+h1, h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 10px; /* Added margin for spacing */
+}
+
+/* Paragraph styling */
+p {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  margin-top: 10px; /* Added margin for spacing */
+}
+
+/* Sorted header styling */
+th.mat-sort-header-sorted {
+  color: black;
+}

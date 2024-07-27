@@ -9,12 +9,12 @@
 
 <div class="heading">
     <div>
-        <button class="button" (click)="getGoogleArticles()">List of Articles</button>
-        <button class="button" (click)="getGoogleResults()">Sentiment Results</button>
+        <button class="button" (click)="showGoogleArticles()">List of Articles</button>
+        <button class="button" (click)="showGoogleResults()">Sentiment Results</button>
     </div>
     <div>
-        <button class="button" (click)="getOnvistaArticles()">List of Articles</button>
-        <button class="button" (click)="getOnvistaResults()">Sentiment Results</button>
+        <button class="button" (click)="showOnvistaArticles()">List of Articles</button>
+        <button class="button" (click)="showOnvistaResults()">Sentiment Results</button>
     </div>
 </div>
 <br>
@@ -23,30 +23,58 @@
 <div>
     <div *ngIf="display1">
         <div *ngIf="google_sentiment_results.length">
+
             <h2>SENTIMENT RESULTS FROM ARTICLES EXTRACTED FROM GOOGLE</h2>
-            <table class="wrapping">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Company</th>
-                        <th>Published Date</th>
-                        <th>Title</th>
-                        <th>URL</th>
-                        <th>Sentiment</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let row of google_sentiment_results">
-                        <td>{{ row.id }}</td>
-                        <td>{{ row.company }}</td>
-                        <td>{{ row.published_date | date }}</td>
-                        <td>{{ row.article_title }}</td>
-                        <td>{{ row.article_url }}</td>
-                        <td>{{ row.sentiment }}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <div class="wrapping">
+                <table mat-table [dataSource]="google_sentiment_results">
+
+                    <!-- ID Column -->
+                    <ng-container matColumnDef="id">
+                        <th mat-header-cell *matHeaderCellDef> ID
+                        </th>
+                        <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                    </ng-container>
+
+                    <!-- Company Column -->
+                    <ng-container matColumnDef="company">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Company </th>
+                        <td mat-cell *matCellDef="let element"> {{element.company}} </td>
+                    </ng-container>
+
+                    <!-- Date Column -->
+                    <ng-container matColumnDef="published_date">
+                        <th mat-header-cell *matHeaderCellDef> Published Date </th>
+                        <td mat-cell *matCellDef="let element"> {{element.published_date | date }} </td>
+                    </ng-container>
+
+                    <!-- Title Column -->
+                    <ng-container matColumnDef="article_title">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Title </th>
+                        <td class="wrap" mat-cell *matCellDef="let element"> {{element.article_title}} </td>
+                    </ng-container>
+
+                    <!-- URL Column -->
+                    <ng-container matColumnDef="article_url">
+                        <th mat-header-cell *matHeaderCellDef>Article Url </th>
+                        <td class="wrap" mat-cell *matCellDef="let element"> {{element.article_url}} </td>
+                    </ng-container>
+
+                    <!-- Sentiment Column -->
+                    <ng-container matColumnDef="sentiment">
+                        <th mat-header-cell *matHeaderCellDef>Sentiment </th>
+                        <td mat-cell *matCellDef="let element"> {{element.sentiment}} </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedResults"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedResults;"></tr>
+                </table>
+            </div>
+
         </div>
+
         <div *ngIf="!google_sentiment_results.length">
             <p>No Results Found</p>
         </div>
@@ -54,30 +82,58 @@
 
     <div *ngIf="display2">
         <div *ngIf="onvista_sentiment_results.length">
+
             <h2>SENTIMENT RESULTS FROM ARTICLES EXTRACTED FROM ONVISTA.DE</h2>
-            <table class="wrapping">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Company</th>
-                        <th>Published Date</th>
-                        <th>Title</th>
-                        <th>URL</th>
-                        <th>Sentiment</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let row of onvista_sentiment_results">
-                        <td>{{ row.id }}</td>
-                        <td>{{ row.company }}</td>
-                        <td>{{ row.published_date | date }}</td>
-                        <td>{{ row.article_title }}</td>
-                        <td>{{ row.article_url }}</td>
-                        <td>{{ row.sentiment }}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <div class="wrapping">
+                <table mat-table [dataSource]="onvista_sentiment_results">
+
+                    <!-- ID Column -->
+                    <ng-container matColumnDef="id">
+                        <th mat-header-cell *matHeaderCellDef> ID
+                        </th>
+                        <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                    </ng-container>
+
+                    <!-- Company Column -->
+                    <ng-container matColumnDef="company">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Company </th>
+                        <td mat-cell *matCellDef="let element"> {{element.company}} </td>
+                    </ng-container>
+
+                    <!-- Date Column -->
+                    <ng-container matColumnDef="published_date">
+                        <th mat-header-cell *matHeaderCellDef> Published Date </th>
+                        <td mat-cell *matCellDef="let element"> {{element.published_date | date }} </td>
+                    </ng-container>
+
+                    <!-- Title Column -->
+                    <ng-container matColumnDef="article_title">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Title </th>
+                        <td class="wrap" mat-cell *matCellDef="let element"> {{element.article_title}} </td>
+                    </ng-container>
+
+                    <!-- URL Column -->
+                    <ng-container matColumnDef="article_url">
+                        <th mat-header-cell *matHeaderCellDef>Article Url </th>
+                        <td class="wrap" mat-cell *matCellDef="let element"> {{element.article_url}} </td>
+                    </ng-container>
+
+                    <!-- Sentiment Column -->
+                    <ng-container matColumnDef="sentiment">
+                        <th mat-header-cell *matHeaderCellDef>Sentiment </th>
+                        <td mat-cell *matCellDef="let element"> {{element.sentiment}} </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedResults"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedResults;"></tr>
+                </table>
+            </div>
+
         </div>
+
         <div *ngIf="!onvista_sentiment_results.length">
             <p>No Results Found</p>
         </div>
@@ -85,28 +141,45 @@
 
     <div *ngIf="display3">
         <div *ngIf="onvista_articles.length">
+
             <h2>LIST OF ARTICLES EXTRACTED FROM ONVISTA.DE</h2>
-            <table class="wrapping">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Company</th>
-                        <th>Published Date</th>
-                        <th>Title</th>
-                        <th>URL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let row of onvista_articles">
-                        <td>{{ row.id }}</td>
-                        <td>{{ row.company }}</td>
-                        <td>{{ row.published_date | date }}</td>
-                        <td>{{ row.article_title }}</td>
-                        <td>{{ row.article_url }}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <div class="wrapping">
+                <table mat-table [dataSource]="onvista_articles">
+
+                    <!-- ID Column -->
+                    <ng-container matColumnDef="id">
+                        <th mat-header-cell *matHeaderCellDef> ID
+                        </th>
+                        <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                    </ng-container>
+
+                    <!-- Company Column -->
+                    <ng-container matColumnDef="company">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Company </th>
+                        <td mat-cell *matCellDef="let element"> {{element.company}} </td>
+                    </ng-container>
+
+                    <!-- Date Column -->
+                    <ng-container matColumnDef="published_date">
+                        <th mat-header-cell *matHeaderCellDef> Published Date </th>
+                        <td mat-cell *matCellDef="let element"> {{element.published_date | date }} </td>
+                    </ng-container>
+
+                    <!-- URL Column -->
+                    <ng-container matColumnDef="article_url">
+                        <th mat-header-cell *matHeaderCellDef>Article Url </th>
+                        <td class="wrap" mat-cell *matCellDef="let element"> {{element.article_url}} </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+            </div>
+
         </div>
+
         <div *ngIf="!onvista_articles.length">
             <p>No Results Found</p>
         </div>
@@ -114,26 +187,45 @@
 
     <div *ngIf="display4">
         <div *ngIf="google_articles.length">
+
             <h2>LIST OF ARTICLES EXTRACTED FROM GOOGLE</h2>
-            <table class="wrapping">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Company</th>
-                        <th>Published Date</th>
-                        <th>URL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let row of google_articles">
-                        <td>{{ row.id }}</td>
-                        <td>{{ row.company }}</td>
-                        <td>{{ row.published_date | date }}</td>
-                        <td>{{ row.article_url }}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <div class="wrapping">
+                <table mat-table [dataSource]="google_articles">
+
+                    <!-- ID Column -->
+                    <ng-container matColumnDef="id">
+                        <th mat-header-cell *matHeaderCellDef> ID
+                        </th>
+                        <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                    </ng-container>
+
+                    <!-- Company Column -->
+                    <ng-container matColumnDef="company">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Company </th>
+                        <td mat-cell *matCellDef="let element"> {{element.company}} </td>
+                    </ng-container>
+
+                    <!-- Date Column -->
+                    <ng-container matColumnDef="published_date">
+                        <th mat-header-cell *matHeaderCellDef> Published Date </th>
+                        <td mat-cell *matCellDef="let element"> {{element.published_date | date }} </td>
+                    </ng-container>
+
+                    <!-- URL Column -->
+                    <ng-container matColumnDef="article_url">
+                        <th mat-header-cell *matHeaderCellDef>Article Url </th>
+                        <td class="wrap" mat-cell *matCellDef="let element"> {{element.article_url}} </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+            </div>
+
         </div>
+
         <div *ngIf="!google_articles.length">
             <p>No Results Found</p>
         </div>

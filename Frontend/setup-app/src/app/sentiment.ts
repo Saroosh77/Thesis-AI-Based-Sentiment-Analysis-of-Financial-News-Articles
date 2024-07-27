@@ -8,9 +8,8 @@ export interface Sentiment {
 }
 
 export interface Article {
-    id: number;
-    company: string;
-    published_date: Date;
-    article_title?: string;
-    article_url: string;
+  id: number;
+  company: string;
+  published_date: Date;
+  article_url: string;
 }
