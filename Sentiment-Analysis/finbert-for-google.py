@@ -212,7 +212,7 @@ def add_to_database(company, published_date, article_title, article_url, sentime
 
         # Create a table if it doesn't exist
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS google_search_results (
+            CREATE TABLE IF NOT EXISTS google_sentiment_results (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 company VARCHAR(255),
                 published_date DATE,
@@ -223,7 +223,7 @@ def add_to_database(company, published_date, article_title, article_url, sentime
         ''')
 
         cursor.execute('''
-            INSERT IGNORE INTO google_search_results (company, published_date, article_title, article_url, sentiment)
+            INSERT IGNORE INTO google_sentiment_results (company, published_date, article_title, article_url, sentiment)
             VALUES (%s, %s, %s, %s, %s)
         ''', (company, published_date, article_title, article_url, sentiment_value))
 

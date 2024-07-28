@@ -50,7 +50,7 @@ def get_google_search_results():
 
         connect = mysql.connector.connect(**db_config)
         cursor = connect.cursor()
-        cursor.execute('SELECT * FROM google_search_results')
+        cursor.execute('SELECT * FROM google_sentiment_results')
         results = cursor.fetchall()
         cursor.close()
         connect.close()
