@@ -26,7 +26,7 @@ def import_data():
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
-        cursor.execute('''SELECT company_name, published_date, article_url FROM google_news_articles LIMIT 50 OFFSET 159''')
+        cursor.execute('''SELECT company_name, published_date, article_url FROM google_news_articles''')
         query = cursor.fetchall()
         conn.commit()
         conn.close()

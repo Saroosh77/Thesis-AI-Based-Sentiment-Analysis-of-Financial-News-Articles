@@ -12,22 +12,20 @@ from bs4 import BeautifulSoup
 bert_tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
 
 # Fetch the pretrained model
-pre_trained_model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+finbert_model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
 
 
 def import_data():
     """
-        Imports data containing company names and news article URLs from the database.
+        Imports data containing company names and related news article details from the database.
 
         Returns:
-            list: A list of tuples containing company name and article URL.
+            list: A list of tuples containing company name, published date, title of article and article URL.
         """
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
-        cursor.execute('''
-            SELECT company_name, published_date, news_title, news_url FROM onvista_articles ORDER BY published_date DESC
-        ''')
+        cursor.execute('''SELECT company_name, published_date, news_title, news_url FROM onvista_articles''')
         query = cursor.fetchall()
         conn.commit()
         conn.close()
@@ -109,7 +107,7 @@ def sentiment_analyzer(df, tokenizer, model):
         Args:
             df (pd.DataFrame): DataFrame containing sentences.
             tokenizer: Tokenizer object.
-            model: Pretrained model.
+            model: Deep learning model 'FinBERT'.
 
         Returns:
             pd.DataFrame: DataFrame containing sentiment analysis results.
@@ -239,7 +237,7 @@ if __name__ == "__main__":
                 if paragraphs:
                     sentence_df = preprocessor(paragraphs)
                     if not sentence_df.empty:
-                        prediction = sentiment_analyzer(sentence_df, bert_tokenizer, pre_trained_model)
+                        prediction = sentiment_analyzer(sentence_df, bert_tokenizer, finbert_model)
                         sentiment = classifier(prediction)
                         add_to_database(company_name, p_date, title, url, sentiment)
                         time.sleep(2)
