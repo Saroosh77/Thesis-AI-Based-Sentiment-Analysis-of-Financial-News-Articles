@@ -1,4 +1,4 @@
-# Semantic Analysis of News Articles using Artificial Intelligence (AI) for Prediction of Market Shares
+# Sentiment Analysis of News Articles using Artificial Intelligence (AI) for Prediction of Market Shares
 
 This project aims to perform sentiment analysis on financial news articles about companies. The workflow includes scraping list of articles from [Google News](https://news.google.com/) and [Onvista.de](https://www.onvista.de/), processing the articles using a pre-trained FinBERT model, and storing the results in a MySQL database. A frontend application displays the list of articles and sentiment results.
 
