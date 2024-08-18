@@ -7,7 +7,6 @@ from db_config import db_config
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from tabulate import tabulate
 
 # Create a tokenizer object
 bert_tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")

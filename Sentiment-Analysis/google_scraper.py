@@ -3,7 +3,6 @@ import mysql.connector
 from db_config import db_config
 from bs4 import BeautifulSoup
 from datetime import datetime
-import json
 
 
 def web_scraper(query):
@@ -69,10 +68,5 @@ def save_in_google_news(query, article_list):
 
 
 if __name__ == "__main__":
-    # search_query = input("Enter the search query: ")
-    with open('companies.json', 'r') as file:
-        data = json.load(file)
-
-    for item in data['company']:
-        print(item)
-        web_scraper(item)
+    search_query = input("Enter the search query: ")
+    web_scraper(search_query)
