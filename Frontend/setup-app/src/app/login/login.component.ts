@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { LoginService } from './login.service';
-import { JwtService } from '../jwt.service';
 import { Router } from '@angular/router';
 import {
   FormBuilder,
@@ -45,7 +44,6 @@ export class LoginComponent {
   login(): void {
     this.service.loginUser(this.loginForm.value).subscribe({
       next: (response) => {
-        // this.jwtservice.login(res);
         console.log('Login successful', response);
         this.message = 'Login Successful!';
         this.openSnackBar(this.message);

@@ -13,7 +13,8 @@ def web_scraper(entity_value, from_date=None, to_date=None):
         list: List of tuples containing article details (published_date, news_title, news_url).
     """
     try:
-        base_url = f"https://www.onvista.de/news/finder?entityType=STOCK&entityValue={entity_value}"
+        base_url = (f"https://www.onvista.de/news/finder?entityType=STOCK&entityValue="
+                    f"{entity_value}")
         if from_date is not None or to_date is not None:
             base_url = base_url + '&timestampPublication='
             if from_date is not None:
@@ -36,18 +37,16 @@ def web_scraper(entity_value, from_date=None, to_date=None):
         for div in divs:
             # Extract href value from the first <a> tag
             a_tag = div.find('a')
-            link = a_tag['href'] if a_tag else None
-            link = str(link)
+            href = a_tag['href'] if a_tag else None
+            href = str(href)
             title = a_tag.text.strip() if a_tag else None
-            link_datetime = div.find('time')
-            link_date = link_datetime['title'] if link_datetime else None
+            date_time = div.find('time')
+            date_obj = date_time['title'] if date_time else None
             # clean string and append into the list
-            if '/news/' in link and '/news/finder' not in link:
-                if (link_date, title, link) not in list_of_articles:
-                    list_of_articles.append((link_date, title, link))
+            if '/news/' in href and '/news/finder' not in href:
+                if (date_obj, title, href) not in list_of_articles:
+                    list_of_articles.append((date_obj, title, href))
 
-        for i in list_of_articles:
-            print(i)
         return list_of_articles
 
     except requests.RequestException as e:

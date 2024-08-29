@@ -14,33 +14,33 @@ def web_scraper(query):
     # Parse the HTML content of the page
     soup = BeautifulSoup(html_content, 'html.parser')
 
-    # Find all <div> tags
+    # Find all <article> tags
     articles = soup.find_all('article')
     list_of_articles = []
     # Process each article tag
     for article in articles:
         # Extract href value from the first <a> tag
         a_tag = article.find('a')
-        link = a_tag['href'] if a_tag else None
-        d_tag = article.find('time')
-        l_date = d_tag['datetime'] if d_tag else None
-        date_obj = datetime.strptime(l_date, "%Y-%m-%dT%H:%M:%SZ")
+        href = a_tag['href'] if a_tag else None
+        time_tag = article.find('time')
+        date_time = time_tag['datetime'] if time_tag else None
+        date_obj = datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%SZ")
         article_date = date_obj.strftime("%Y-%m-%d")
-        if link:
-            article_url = base_url + link[1:]
+        if href:
+            article_url = base_url + href[1:]
             if article_url not in list_of_articles:
                 list_of_articles.append((article_date, article_url))
 
     # Save the links to the MySQL database
     if list_of_articles:
-        save_in_google_news(query, list_of_articles)
+        save_in_database(query, list_of_articles)
         print(f"{len(list_of_articles)} articles on '{query}' saved to the database.")
         print(list_of_articles)
     else:
         print("No articles were scraped.")
 
 
-def save_in_google_news(query, article_list):
+def save_in_database(query, article_list):
     # Connect to MySQL database
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()

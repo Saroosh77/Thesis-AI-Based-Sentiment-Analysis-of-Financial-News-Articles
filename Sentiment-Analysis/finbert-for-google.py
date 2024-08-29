@@ -38,13 +38,14 @@ def import_data():
 
 def web_scraper(web_url):
     """
-        Scrapes paragraphs from a given news article URL.
+        Scrapes title and paragraphs from a given news article URL.
 
         Args:
             web_url (str): The URL of the news article.
 
         Returns:
             list: A list of scraped paragraphs from the article, or None if an error occurs.
+            title: Title of the article extracted from the content.
         """
     try:
         response = requests.get(web_url)
@@ -139,7 +140,6 @@ def sentiment_analyzer(df, tokenizer, model):
             df.loc[i, 'Neutral'] = predictions[0][2].tolist()
 
         df = df[['Sentence', 'Positive', 'Negative', 'Neutral']]
-        # print(tabulate(df, headers='keys', tablefmt='psql'))
         return df
 
     except Exception as e:
@@ -171,7 +171,6 @@ def classifier(df):
             elif df.loc[i, 'Negative'] > df.loc[i, 'Positive']:
                 negative.append(df.loc[i, 'Negative'])
 
-        # print(len(positive), len(negative), len(neutral))
         sentiment_score = (len(positive) - len(negative)) / len(df.index)
         value = None
 

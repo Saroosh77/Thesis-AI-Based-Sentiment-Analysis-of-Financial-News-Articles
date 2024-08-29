@@ -91,8 +91,13 @@ def preprocessor(paragraph_list):
             filtered_sentences = [sentence for sentence in sentences if sentence.strip()]
             sentence_list.extend(filtered_sentences)
 
-        df = pd.DataFrame(sentence_list, columns=['Sentence'])
-        # pd.set_option('expand_frame_repr', False)
+        processed_list = []
+        for i in sentence_list:
+            if len(str(i)) > 5:
+                processed_list.append(i)
+
+        df = pd.DataFrame(processed_list, columns=['Sentence'])
+        pd.set_option('expand_frame_repr', False)
         return df
 
     except Exception as e:
@@ -117,10 +122,10 @@ def sentiment_analyzer(df, tokenizer, model):
             sentence = df.loc[i, 'Sentence']
 
             # Pre-process input phrase
-            inputs = tokenizer(sentence, padding=True, truncation=True, return_tensors='pt')
+            input_tensors = tokenizer(sentence, padding=True, truncation=True, return_tensors='pt')
 
             # Estimate output
-            output = model(**inputs)
+            output = model(**input_tensors)
 
             # Pass model output logits through a softmax layer.
             predictions = torch.nn.functional.softmax(output.logits, dim=-1)
@@ -146,7 +151,6 @@ def classifier(df):
         Returns: str: Overall sentiment classification ('Very Negative', 'Slightly Negative', 'Neutral',
                                                         'Slightly Positive', or 'Very Positive').
     """
-
     try:
         positive = []
         negative = []
@@ -250,3 +254,5 @@ if __name__ == "__main__":
 
     except Exception as f:
         print(f"An unexpected error occurred in execution : {f}")
+
+    print("Execution has been completed!")

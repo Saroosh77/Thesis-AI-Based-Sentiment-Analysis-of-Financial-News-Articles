@@ -7,4 +7,19 @@
     margin: 0 auto;
     padding: 5vh;
     background-color: #F5F5FF;
+    text-align: center;
+}
+
+.button {
+    background-color: #6666f4;
+    border-radius: 25px;
+    font-size: large;
+    padding: 5px 10px;
+}
+
+.password, .email {
+    border-radius: 25px;
+    font-size: medium;
+    padding: 5px 10px;
+    margin: 5px 0px;
 }

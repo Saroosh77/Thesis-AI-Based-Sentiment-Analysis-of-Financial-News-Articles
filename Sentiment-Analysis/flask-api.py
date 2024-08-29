@@ -148,7 +148,6 @@ def get_onvista_articles():
         results = cursor.fetchall()
         cursor.close()
         connect.close()
-
         rows = []
         for row in results:
             item = {
@@ -158,7 +157,6 @@ def get_onvista_articles():
                 'article_url': row[4],
             }
             rows.append(item)
-
         return jsonify(rows)
 
     except mysql.connector.Error as e:
