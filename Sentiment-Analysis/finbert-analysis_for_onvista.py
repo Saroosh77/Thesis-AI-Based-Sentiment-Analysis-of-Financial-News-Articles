@@ -1,21 +1,30 @@
 import time
-import torch.nn.functional
+import logging
+import torch.nn.functional as F
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import mysql.connector
+import mysql.connector as dbconnector
 from db_config import db_config
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+from typing import List, Tuple, Optional
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Constants
+FINBERT_MODEL = "ProsusAI/finbert"
+SLEEP_TIME = 2  # seconds between requests
 
 # Create a tokenizer object
-bert_tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
+bert_tokenizer = AutoTokenizer.from_pretrained(FINBERT_MODEL)
 
 # Fetch the pretrained model
-finbert_model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+finbert_model = AutoModelForSequenceClassification.from_pretrained(FINBERT_MODEL)
 
 
-def import_data():
+def import_data() -> List[Tuple[str, str, str, str]]:
     """
         Imports data containing company names and related news article details from the database.
 
@@ -23,20 +32,21 @@ def import_data():
             list: A list of tuples containing company name, published date, title of article and article URL.
         """
     try:
-        conn = mysql.connector.connect(**db_config)
+        conn = dbconnector.connect(**db_config)
         cursor = conn.cursor()
         cursor.execute('''SELECT company_name, published_date, news_title, news_url FROM onvista_articles''')
         query = cursor.fetchall()
         conn.commit()
+        cursor.close()
         conn.close()
         return query
 
-    except mysql.connector.Error as e:
-        print(f"Error in Database: {e}")
+    except dbconnector.Error as e:
+        logging.error(f"Database error in import_data: {e}")
         return []
 
 
-def web_scraper(web_url):
+def web_scraper(web_url: str) -> Optional[List[str]]:
     """
         Scrapes paragraphs from a given news article URL.
 
@@ -49,7 +59,7 @@ def web_scraper(web_url):
     try:
         response = requests.get(web_url)
         response.encoding = 'utf-8'
-        html = response.content
+        html = str(response.content)
 
         # Creating a BeautifulSoup object from the HTML
         soup = BeautifulSoup(html, features="html.parser")
@@ -57,24 +67,25 @@ def web_scraper(web_url):
         # Find all divs in the html
         divs = soup.find_all('div')
 
-        p_list = []
+        paragraph_list = []
         for div in divs:
             p_tags = div.find_all('p')
             for p in p_tags:
-                p_tag = p.text if p else None
-                if p_tag not in p_list and p_tag is not None:
-                    p_list.append(p_tag)
+                paragraph_text = p.text if p else None
+                if paragraph_text not in paragraph_list and paragraph_text is not None:
+                    paragraph_list.append(paragraph_text)
 
-        return p_list
+        return paragraph_list
 
     except requests.RequestException as e:
-        print(f"Error fetching data from {web_url}: {e} ")
+        logging.error(f"Request error fetching data from {web_url}: {e}")
         return None
     except Exception as e:
-        print(f"An unexpected error occurred in Scraper: {e} ")
+        logging.error(f"An unexpected error occurred in Scraper: {e}")
+        return None
 
 
-def preprocessor(paragraph_list):
+def preprocessor(paragraph_list: List[str]) -> pd.DataFrame:
     """
         Preprocesses a list of paragraphs into a DataFrame with a 'Sentence' column.
 
@@ -85,6 +96,9 @@ def preprocessor(paragraph_list):
             pd.DataFrame: A DataFrame containing a 'Sentence' column with split sentences.
         """
     try:
+        if not paragraph_list:
+            return pd.DataFrame(columns=['Sentence'])
+        
         sentence_list = []
         for paragraph in paragraph_list:
             sentences = paragraph.split('. ')  # Split by full stops with spaces
@@ -92,20 +106,20 @@ def preprocessor(paragraph_list):
             sentence_list.extend(filtered_sentences)
 
         processed_list = []
-        for i in sentence_list:
-            if len(str(i)) > 5:
-                processed_list.append(i)
+        for sentence in sentence_list:
+            if len(str(sentence)) > 5:
+                processed_list.append(sentence)
 
         df = pd.DataFrame(processed_list, columns=['Sentence'])
         pd.set_option('expand_frame_repr', False)
         return df
 
     except Exception as e:
-        print(f"An unexpected error occurred in Preprocessor: {e} ")
+        logging.error(f"An unexpected error occurred in Preprocessor: {e}")
         return pd.DataFrame(columns=['Sentence'])
 
 
-def sentiment_analyzer(df, tokenizer, model):
+def sentiment_analyzer(df: pd.DataFrame, tokenizer, model) -> pd.DataFrame:
     """
         Analyze sentiment of sentences using the pretrained model.
 
@@ -128,7 +142,7 @@ def sentiment_analyzer(df, tokenizer, model):
             output = model(**input_tensors)
 
             # Pass model output logits through a softmax layer.
-            predictions = torch.nn.functional.softmax(output.logits, dim=-1)
+            predictions = F.softmax(output.logits, dim=-1)
             df.loc[i, 'Positive'] = predictions[0][0].tolist()
             df.loc[i, 'Negative'] = predictions[0][1].tolist()
             df.loc[i, 'Neutral'] = predictions[0][2].tolist()
@@ -137,11 +151,11 @@ def sentiment_analyzer(df, tokenizer, model):
         return df
 
     except Exception as e:
-        print(f"An unexpected error occurred in Sentiment Analyzer: {e} ")
+        logging.error(f"An unexpected error occurred in Sentiment Analyzer: {e}")
         return pd.DataFrame(columns=['Sentence', 'Positive', 'Negative', 'Neutral'])
 
 
-def classifier(df):
+def classifier(df: pd.DataFrame) -> Optional[str]:
     """
         Classify sentiment based on sentiment scores.
 
@@ -152,6 +166,9 @@ def classifier(df):
                                                         'Slightly Positive', or 'Very Positive').
     """
     try:
+        if df.empty:
+            return 'No result'
+        
         positive = []
         negative = []
         neutral = []
@@ -164,7 +181,11 @@ def classifier(df):
             elif df.loc[i, 'Positive'] < df.loc[i, 'Negative']:
                 negative.append(df.loc[i, 'Negative'])
 
-        sentiment_score = (len(positive) - len(negative)) / len(df.index)
+        total_sentences = len(df.index)
+        if total_sentences == 0:
+            return 'Neutral'
+        
+        sentiment_score = (len(positive) - len(negative)) / total_sentences
         value = None
 
         if -1 <= sentiment_score < -0.5:
@@ -181,10 +202,11 @@ def classifier(df):
         return value
 
     except Exception as e:
-        print(f"An unexpected error occurred in Classifier: {e}")
+        logging.error(f"An unexpected error occurred in Classifier: {e}")
+        return None
 
 
-def add_to_database(company, published_date, article_title, article_url, sentiment_value):
+def add_to_database(company: str, published_date, article_title: str, article_url: str, sentiment_value: Optional[str]):
     """
         Add sentiment analysis results to the database.
 
@@ -197,11 +219,8 @@ def add_to_database(company, published_date, article_title, article_url, sentime
         """
 
     try:
-        # Connect to MySQL database
-        conn = mysql.connector.connect(**db_config)
+        conn = dbconnector.connect(**db_config)
         cursor = conn.cursor()
-
-        # Create a table if it doesn't exist
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS onvista_sentiment_results (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -218,14 +237,14 @@ def add_to_database(company, published_date, article_title, article_url, sentime
             VALUES (%s, %s, %s, %s, %s)
         ''', (company, published_date, article_title, article_url, sentiment_value))
 
-        # Commit changes and close the connection
         conn.commit()
+        cursor.close()
         conn.close()
 
-        print(f"{company}, '{published_date} , '{article_title} , '{article_url}', {sentiment_value} saved to the database.")
+        logging.info(f"{company}, {published_date}, {article_title}, {article_url}, {sentiment_value} saved to the database.")
 
-    except mysql.connector.Error as e:
-        print(f"Error: {e}")
+    except dbconnector.Error as e:
+        logging.error(f"Database error: {e}")
 
 
 if __name__ == "__main__":
@@ -234,7 +253,7 @@ if __name__ == "__main__":
         if data:
             for row in data:
                 company_name = row[0]
-                p_date = row[1]
+                published_date = row[1]
                 title = row[2]
                 url = row[3]
                 paragraphs = web_scraper(url)
@@ -243,16 +262,19 @@ if __name__ == "__main__":
                     if not sentence_df.empty:
                         prediction = sentiment_analyzer(sentence_df, bert_tokenizer, finbert_model)
                         sentiment = classifier(prediction)
-                        add_to_database(company_name, p_date, title, url, sentiment)
-                        time.sleep(2)
+                        if sentiment:
+                            add_to_database(company_name, published_date, title, url, sentiment)
+                        else:
+                            logging.warning(f"Could not classify sentiment for {url}")
+                        time.sleep(SLEEP_TIME)
                     else:
-                        print(f"Could not find/retrieve data from {url}")
+                        logging.warning(f"Could not find/retrieve data from {url}")
                 else:
-                    print(f"Could not scrap data from {url}")
+                    logging.warning(f"Could not scrape data from {url}")
         else:
-            print("Failed to import data from the database")
+            logging.error("Failed to import data from the database")
 
-    except Exception as f:
-        print(f"An unexpected error occurred in execution : {f}")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred in execution: {e}")
 
-    print("Execution has been completed!")
+    logging.info("Execution has been completed!")
