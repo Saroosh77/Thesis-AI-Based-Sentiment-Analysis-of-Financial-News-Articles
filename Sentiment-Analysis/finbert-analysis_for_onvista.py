@@ -34,7 +34,7 @@ def import_data() -> List[Tuple[str, str, str, str]]:
     try:
         conn = dbconnector.connect(**db_config)
         cursor = conn.cursor()
-        cursor.execute('''SELECT company_name, published_date, news_title, news_url FROM onvista_articles''')
+        cursor.execute('''SELECT company_name, published_date, article_title, article_url FROM onvista_articles''')
         query = cursor.fetchall()
         conn.commit()
         cursor.close()
@@ -153,6 +153,50 @@ def sentiment_analyzer(df: pd.DataFrame, tokenizer, model) -> pd.DataFrame:
     except Exception as e:
         logging.error(f"An unexpected error occurred in Sentiment Analyzer: {e}")
         return pd.DataFrame(columns=['Sentence', 'Positive', 'Negative', 'Neutral'])
+
+
+def classify_sentence(pos, neg, neu) -> str[str, str, str]:
+    """
+    Improved sentence-level sentiment classification.
+    
+    Args:
+        pos: positive score (0-1)
+        neg: negative score (0-1)
+        neu: neutral score (0-1)
+    
+    Returns:
+        label: 'positive', 'negative', or 'neutral'
+        compound_score: float between -1 and 1
+        confidence: float between 0 and 1
+    """
+        # Calculate compound score to get a continous score
+
+    compound_score = (pos - neg) / (pos + neg + 1e-6) # avoid division by zero
+
+    # Calculate confidence (How "sure" is the model that it's NOT neutral?)
+
+    polarity_strength = pos + neg # total emotional content
+    dominance = abs(pos - neg) # how clearly one side wins
+    confidence = polarity_strength * dominance
+
+    # Classify with Adaptive Thresholds
+
+    is_neutral = (
+        neu > 0.5 or                        # neutral dominates
+        (polarity_strength < 0.2) or        # very low emotional content
+        (dominance < 0.1 and neu > 0.3) or  # pos ≈ neg and decent neutral
+        confidence < 0.02                   # very low confidence
+    )
+
+    if is_neutral:
+        sentiment = 'neutral'
+    elif pos > neg:
+        sentiment = 'positive'
+    else:
+        sentiment = 'negative'
+
+    return sentiment, compound_score, confidence
+    
 
 
 def classifier(df: pd.DataFrame) -> Optional[str]:
