@@ -169,7 +169,7 @@ def classify_sentence(pos, neg, neu) -> str[str, str, str]:
         compound_score: float between -1 and 1
         confidence: float between 0 and 1
     """
-        # Calculate compound score to get a continous score
+    # Calculate compound score to get a continous score
 
     compound_score = (pos - neg) / (pos + neg + 1e-6) # avoid division by zero
 
@@ -197,7 +197,22 @@ def classify_sentence(pos, neg, neu) -> str[str, str, str]:
 
     return sentiment, compound_score, confidence
     
-
+def categorize_score(score) -> str:
+    """
+    Categorization with 5 tiers.
+    """
+    thresholds = [
+        (-1.0,  -0.45,  'very negative'),
+        (-0.45,  -0.05, 'slightly negative'),
+        (-0.1,  0.1, 'neutral'),
+        ( 0.1,  0.45,  'slightly positive'),
+        ( 0.45,   1.0,  'very positive'),
+    ]
+    
+    for low, high, sentiment in thresholds:
+        if low <= score < high:
+            return sentiment
+    return 'very positive'  # edge case: score = 1.0
 
 def classifier(df: pd.DataFrame) -> Optional[str]:
     """
